@@ -36,6 +36,23 @@ function askUser() {
                 askUser();
             });
         }
+        if(input.option === "View employees by Department") {
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    choices: ['Management', 'Engineering', 'Software'],
+                    message: 'Choose a department:',
+                    name: "department"
+                }
+            ])
+            .then(function(input2) {
+                connection.query("SELECT * FROM employees WHERE department = ?", input2.department, function(err, res) {
+                    if(err) throw err;
+                    console.table(res);
+                    askUser();
+                });
+            });
+        }
     });
 };
 
