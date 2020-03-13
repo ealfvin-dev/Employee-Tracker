@@ -1,0 +1,23 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "Packages for the employee-tracker application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ealfvin-dev/Employee-Tracker.git"
+  },
+  "author": "Erik Alfvin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ealfvin-dev/Employee-Tracker/issues"
+  },
+  "homepage": "https://github.com/ealfvin-dev/Employee-Tracker#readme",
+  "dependencies": {
+    "inquirer": "^7.1.0",
+    "mysql": "^2.18.1"
+  }
+}
