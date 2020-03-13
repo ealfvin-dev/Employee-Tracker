@@ -45,10 +45,51 @@ function askUser() {
                     name: "department"
                 }
             ])
-            .then(function(input2) {
-                connection.query("SELECT * FROM employees WHERE department = ?", input2.department, function(err, res) {
+            .then(function(departmentInput) {
+                connection.query("SELECT * FROM employees WHERE department = ?", departmentInput.department, function(err, res) {
                     if(err) throw err;
                     console.table(res);
+                    askUser();
+                });
+            });
+        }
+        if(input.option === "Add Employee") {
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    message: "Employee first name",
+                    name: "firstName"
+                },
+                {
+                    type: 'input',
+                    message: "Employee last name",
+                    name: "lastName"
+                },
+                {
+                    type: 'input',
+                    message: "Employee title",
+                    name: "title"
+                },
+                {
+                    type: 'input',
+                    message: "Employee department",
+                    name: "department"
+                },
+                {
+                    type: 'input',
+                    message: "Employee salary",
+                    name: "salary"
+                },
+                {
+                    type: 'input',
+                    message: "Employee manager",
+                    name: "manager"
+                }
+            ]).then(function(employeeInfo) {
+                employeeData = [employeeInfo.firstName, employeeInfo.lastName, employeeInfo.title, employeeInfo.department, employeeInfo.salary, employeeInfo.manager];
+                
+                connection.query("INSERT INTO employees (first_name, last_name, title, department, salary, manager) VALUES (?, ?, ?, ?, ?, ?)", employeeData, function(err, res) {
+                    if(err) throw err;
                     askUser();
                 });
             });
