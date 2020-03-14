@@ -11,12 +11,12 @@ const connection = mysql.createConnection({
 });
   
 connection.connect(function(err) {
-if (err) {
-    console.error("error connecting: " + err.stack);
-    return;
-}
+    if (err) {
+        console.error("error connecting: " + err.stack);
+        return;
+    }
 
-console.log("Connected as id " + connection.threadId);
+    console.log("Connected as id " + connection.threadId);
 });
 
 function askUser() {
@@ -30,26 +30,37 @@ function askUser() {
     ])
     .then(function(input) {
         if(input.option === "View All Employees") {
-            connection.query("SELECT * FROM employees", function(err, res) {
+            connection.query("SELECT id, first_name, last_name, title, salary, department, manager_id FROM \
+            employees LEFT JOIN (roles LEFT JOIN departments ON roles.department_id = departments.dep_id) ON employees.role_id = roles.role_id", function(err, res) {
                 if(err) throw err;
                 console.table(res);
                 askUser();
             });
         }
         if(input.option === "View employees by Department") {
-            inquirer.prompt([
-                {
-                    type: 'list',
-                    choices: ['Management', 'Engineering', 'Software', 'Admin', 'Other'],
-                    message: 'Choose a department:',
-                    name: "department"
-                }
-            ])
-            .then(function(departmentInput) {
-                connection.query("SELECT * FROM employees WHERE department = ?", departmentInput.department, function(err, res) {
-                    if(err) throw err;
-                    console.table(res);
-                    askUser();
+            connection.query("SELECT department FROM departments", function(err, departmentsData) {
+                if(err) throw err;
+                
+                departments = []
+                for(let i = 0; i < departmentsData.length; i++) {
+                    departments.push(departmentsData[i].department);
+                };
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        choices: departments,
+                        message: 'Choose a department:',
+                        name: "department"
+                    }
+                ])
+                .then(function(departmentInput) {
+                    connection.query("SELECT id, first_name, last_name, title, salary, department, manager_id FROM \
+                    employees LEFT JOIN (roles LEFT JOIN departments ON roles.department_id = departments.dep_id) ON employees.role_id = roles.role_id WHERE department = ?", departmentInput.department, function(err, res) {
+                        if(err) throw err;
+                        console.table(res);
+                        askUser();
+                    });
                 });
             });
         }
