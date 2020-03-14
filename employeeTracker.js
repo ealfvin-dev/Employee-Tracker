@@ -40,7 +40,7 @@ function askUser() {
             inquirer.prompt([
                 {
                     type: 'list',
-                    choices: ['Management', 'Engineering', 'Software'],
+                    choices: ['Management', 'Engineering', 'Software', 'Admin', 'Other'],
                     message: 'Choose a department:',
                     name: "department"
                 }
@@ -94,7 +94,7 @@ function askUser() {
                 });
             });
         }
-        if(input.option === "Remove Employee") {
+        if(input.option === "Remove Employee" || input.option === "Update Employee") {
             //Get names and ids from database and pass into inquirer prompt
             connection.query("SELECT id, first_name, last_name from employees", function(err, data) {
                 if(err) throw err;
@@ -108,18 +108,89 @@ function askUser() {
                     {
                         type: 'list',
                         choices: names,
-                        message: 'Choose an employee to remove:',
-                        name: "axedEmployee"
+                        message: 'Select an employee:',
+                        name: "employee"
                     }
                 ]).then(function(choice) {
-                    //Get ID of removed employee selection and remove from database
-                    const axedEmployeeID = choice.axedEmployee.split(" ")[0];
-                    connection.query("DELETE FROM employees WHERE id = ?", axedEmployeeID, function(err, data) {
-                        if(err) throw err;
-                        askUser();
-                    });
+                    if(input.option === "Remove Employee") {
+                        //Get ID of selected employee and remove from database
+                        const employeeID = choice.employee.split(" ")[0];
+                        connection.query("DELETE FROM employees WHERE id = ?", employeeID, function(err, data) {
+                            if(err) throw err;
+                            askUser();
+                        });
+                    }
+                    else if(input.option === "Update Employee") {
+                        //Get ID of selected employee and update selected part of database
+                        const employeeID = choice.employee.split(" ")[0];
+                        inquirer.prompt([
+                            {
+                                type: 'list',
+                                choices: ["Title", "Department", "Salary", "Manager"],
+                                message: 'What do you want to update?:',
+                                name: "update"
+                            }
+                        ]).then(function(choice) {
+                            if(choice.update === "Title"){
+                                inquirer.prompt([
+                                    {
+                                        type: 'input',
+                                        message: "Enter a new title:",
+                                        name: "newTitle"
+                                    }
+                                ]).then(function(newTitle) {
+                                    connection.query("UPDATE employees SET title = ? WHERE id = ?", [newTitle.newTitle, employeeID], function(err, data) {
+                                        if(err) throw err;
+                                        askUser();
+                                    });
+                                });
+                            }
+                            else if(choice.update === "Department") {
+                                inquirer.prompt([
+                                    {
+                                        type: 'input',
+                                        message: "Enter a new department:",
+                                        name: "newDepartment"
+                                    }
+                                ]).then(function(newDepartment) {
+                                    connection.query("UPDATE employees SET department = ? WHERE id = ?", [newDepartment.newDepartment, employeeID], function(err, data) {
+                                        if(err) throw err;
+                                        askUser();
+                                    });
+                                });
+                            }
+                            else if(choice.update === "Salary") {
+                                inquirer.prompt([
+                                    {
+                                        type: 'input',
+                                        message: "Enter a new salary:",
+                                        name: "newSalary"
+                                    }
+                                ]).then(function(newSalary) {
+                                    connection.query("UPDATE employees SET salary = ? WHERE id = ?", [newSalary.newSalary, employeeID], function(err, data) {
+                                        if(err) throw err;
+                                        askUser();
+                                    });
+                                });
+                            }
+                            else if(choice.update === "Manager") {
+                                inquirer.prompt([
+                                    {
+                                        type: 'input',
+                                        message: "Enter a new manager:",
+                                        name: "newManager"
+                                    }
+                                ]).then(function(newManager) {
+                                    connection.query("UPDATE employees SET manager = ? WHERE id = ?", [newManager.newManager, employeeID], function(err, data) {
+                                        if(err) throw err;
+                                        askUser();
+                                    });
+                                });
+                            }
+                        });
+                    }
                 });
-            })
+            });
         }
     });
 };
