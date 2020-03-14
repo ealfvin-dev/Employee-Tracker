@@ -65,43 +65,56 @@ function askUser() {
             });
         }
         if(input.option === "Add Employee") {
-            inquirer.prompt([
-                {
-                    type: 'input',
-                    message: "Employee first name",
-                    name: "firstName"
-                },
-                {
-                    type: 'input',
-                    message: "Employee last name",
-                    name: "lastName"
-                },
-                {
-                    type: 'input',
-                    message: "Employee title",
-                    name: "title"
-                },
-                {
-                    type: 'input',
-                    message: "Employee department",
-                    name: "department"
-                },
-                {
-                    type: 'input',
-                    message: "Employee salary",
-                    name: "salary"
-                },
-                {
-                    type: 'input',
-                    message: "Employee manager",
-                    name: "manager"
+            connection.query("SELECT * FROM employees", function(err, data) {
+                let names = [];
+
+                for(let i = 0; i < data.length; i++) {
+                    names.push(data[i].manager_id + " " + data[i].first_name + " " + data[i].last_name);
+                };
+
+                let roles = [];
+
+                function getRoles() {
+                    connection.query("SELECT * FROM roles", function(err, queryData) {
+                        for(let i = 0; i < queryData.length; i++) {
+                            roles.push(queryData[i].role_id + " " + queryData[i].title);
+                        }
+                    });
                 }
-            ]).then(function(employeeInfo) {
-                employeeData = [employeeInfo.firstName, employeeInfo.lastName, employeeInfo.title, employeeInfo.department, employeeInfo.salary, employeeInfo.manager];
-                
-                connection.query("INSERT INTO employees (first_name, last_name, title, department, salary, manager) VALUES (?, ?, ?, ?, ?, ?)", employeeData, function(err, res) {
-                    if(err) throw err;
-                    askUser();
+
+                getRoles();
+
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        message: "Employee first name",
+                        name: "firstName"
+                    },
+                    {
+                        type: 'input',
+                        message: "Employee last name",
+                        name: "lastName"
+                    },
+                    {
+                        type: 'list',
+                        message: "Employee role",
+                        choices: roles,
+                        name: "role"
+                    },
+                    {
+                        type: 'list',
+                        message: "Employee manager",
+                        choices: names,
+                        name: "manager"
+                    }
+                ]).then(function(employeeInfo) {
+                    const managerID = employeeInfo.manager.split(" ")[0];
+                    employeeData = [employeeInfo.firstName, employeeInfo.lastName, managerID, employeeInfo.role.split(" ")[0]];
+
+                    connection.query("INSERT INTO employees (first_name, last_name, manager_id, role_id) VALUES (?, ?, ?, ?)", employeeData, function(err, res) {
+                        if(err) throw err;
+                        askUser();
+                    });
                 });
             });
         }

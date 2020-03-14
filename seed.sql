@@ -44,8 +44,7 @@ INSERT INTO roles (title, salary, department_id) VALUES ("Software Engineer", 70
 INSERT INTO roles (title, salary, department_id) VALUES ("HR Staff", 60000, 3);  -- PK 4
 INSERT INTO roles (title, salary, department_id) VALUES ("Lowly Intern", 40000, 4);  -- PK 5
 
--- Insert employees
-INSERT INTO employees (first_name, last_name, role_id) VALUES ("Bobby", "Smith", 1);
+INSERT INTO employees (first_name, last_name, manager_id, role_id) VALUES ("Bobby", "Smith", 1, 1);
 INSERT INTO employees (first_name, last_name, manager_id, role_id) VALUES ("Pete", "Whebbe", 1, 1);
 INSERT INTO employees (first_name, last_name, manager_id, role_id) VALUES ("Anna", "Pierce", 2, 2);
 INSERT INTO employees (first_name, last_name, manager_id, role_id) VALUES ("Erik", "Erikson", 2, 2);
