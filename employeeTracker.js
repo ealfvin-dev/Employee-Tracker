@@ -94,6 +94,33 @@ function askUser() {
                 });
             });
         }
+        if(input.option === "Remove Employee") {
+            //Get names and ids from database and pass into inquirer prompt
+            connection.query("SELECT id, first_name, last_name from employees", function(err, data) {
+                if(err) throw err;
+
+                names = [];
+                for(let i = 0; i < data.length; i++) {
+                    names.push(data[i].id + " " + data[i].first_name + " " + data[i].last_name);
+                };
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        choices: names,
+                        message: 'Choose an employee to remove:',
+                        name: "axedEmployee"
+                    }
+                ]).then(function(choice) {
+                    //Get ID of removed employee selection and remove from database
+                    const axedEmployeeID = choice.axedEmployee.split(" ")[0];
+                    connection.query("DELETE FROM employees WHERE id = ?", axedEmployeeID, function(err, data) {
+                        if(err) throw err;
+                        askUser();
+                    });
+                });
+            })
+        }
     });
 };
 
