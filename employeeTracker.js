@@ -23,7 +23,7 @@ function askUser() {
     inquirer.prompt([
         {
             type: 'list',
-            choices: ['View All Employees', 'Add Employee', 'Remove Employee', 'Update Employee', 'View employees by Department', 'View employees by Role'],
+            choices: ['View All Employees', 'Add Employee', 'Remove Employee', 'Update Employee Role', 'View employees by Department', 'View employees by Role', 'Add Department'],
             message: 'Choose an option:',
             name: "option"
         }
@@ -145,7 +145,7 @@ function askUser() {
                 });
             });
         }
-        if(input.option === "Remove Employee" || input.option === "Update Employee") {
+        if(input.option === "Remove Employee" || input.option === "Update Employee Role") {
             //Get names and ids from database and pass into inquirer prompt
             connection.query("SELECT * from employees", function(err, data) {
                 if(err) throw err;
@@ -171,75 +171,47 @@ function askUser() {
                             askUser();
                         });
                     }
-                    else if(input.option === "Update Employee") {
-                        //Get ID of selected employee and update selected part of database
+                    else if(input.option === "Update Employee Role") {
+                        //Get ID of selected employee and update role
                         const employeeID = choice.employee.split(" ")[0];
-                        inquirer.prompt([
-                            {
-                                type: 'list',
-                                choices: ["Title", "Department", "Salary", "Manager"],
-                                message: 'What do you want to update?:',
-                                name: "update"
-                            }
-                        ]).then(function(choice) {
-                            if(choice.update === "Title"){
-                                inquirer.prompt([
-                                    {
-                                        type: 'input',
-                                        message: "Enter a new title:",
-                                        name: "newTitle"
-                                    }
-                                ]).then(function(newTitle) {
-                                    connection.query("UPDATE employees SET title = ? WHERE id = ?", [newTitle.newTitle, employeeID], function(err, data) {
-                                        if(err) throw err;
-                                        askUser();
-                                    });
+
+                        connection.query("SELECT * from roles", function(err, data) {
+                            if(err) throw err;
+                            
+                            roles = [];
+                            for(let i = 0; i < data.length; i++) {
+                                roles.push(data[i].role_id + " " + data[i].title);
+                            };
+
+                            inquirer.prompt([
+                                {
+                                    type: 'list',
+                                    choices: roles,
+                                    message: 'What is the new role?:',
+                                    name: "updatedRole"
+                                }
+                            ]).then(function(update) {
+                                connection.query("UPDATE employees SET role_id = ? WHERE id = ?", [update.updatedRole.split(" ")[0], employeeID], function(err, data) {
+                                    if(err) throw err;
+                                    askUser();
                                 });
-                            }
-                            else if(choice.update === "Department") {
-                                inquirer.prompt([
-                                    {
-                                        type: 'input',
-                                        message: "Enter a new department:",
-                                        name: "newDepartment"
-                                    }
-                                ]).then(function(newDepartment) {
-                                    connection.query("UPDATE employees SET department = ? WHERE id = ?", [newDepartment.newDepartment, employeeID], function(err, data) {
-                                        if(err) throw err;
-                                        askUser();
-                                    });
-                                });
-                            }
-                            else if(choice.update === "Salary") {
-                                inquirer.prompt([
-                                    {
-                                        type: 'input',
-                                        message: "Enter a new salary:",
-                                        name: "newSalary"
-                                    }
-                                ]).then(function(newSalary) {
-                                    connection.query("UPDATE employees SET salary = ? WHERE id = ?", [newSalary.newSalary, employeeID], function(err, data) {
-                                        if(err) throw err;
-                                        askUser();
-                                    });
-                                });
-                            }
-                            else if(choice.update === "Manager") {
-                                inquirer.prompt([
-                                    {
-                                        type: 'input',
-                                        message: "Enter a new manager:",
-                                        name: "newManager"
-                                    }
-                                ]).then(function(newManager) {
-                                    connection.query("UPDATE employees SET manager = ? WHERE id = ?", [newManager.newManager, employeeID], function(err, data) {
-                                        if(err) throw err;
-                                        askUser();
-                                    });
-                                });
-                            }
+                            });
                         });
                     }
+                });
+            });
+        }
+        if(input.option === 'Add Department') {
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    message: "Enter a new department:",
+                    name: "newDepartment"
+                }
+            ]).then(function(newDep) {
+                connection.query("INSERT INTO departments (department) VALUES (?)", newDep.newDepartment, function(err, data) {
+                    if(err) throw err;
+                    askUser();
                 });
             });
         }
