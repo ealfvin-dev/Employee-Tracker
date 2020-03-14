@@ -23,7 +23,7 @@ function askUser() {
     inquirer.prompt([
         {
             type: 'list',
-            choices: ['View All Employees', 'Add Employee', 'Remove Employee', 'Update Employee', 'View employees by Department'],
+            choices: ['View All Employees', 'Add Employee', 'Remove Employee', 'Update Employee', 'View employees by Department', 'View employees by Role'],
             message: 'Choose an option:',
             name: "option"
         }
@@ -41,7 +41,7 @@ function askUser() {
             connection.query("SELECT department FROM departments", function(err, departmentsData) {
                 if(err) throw err;
                 
-                departments = []
+                let departments = [];
                 for(let i = 0; i < departmentsData.length; i++) {
                     departments.push(departmentsData[i].department);
                 };
@@ -57,6 +57,33 @@ function askUser() {
                 .then(function(departmentInput) {
                     connection.query("SELECT id, first_name, last_name, title, salary, department, manager_id FROM \
                     employees LEFT JOIN (roles LEFT JOIN departments ON roles.department_id = departments.dep_id) ON employees.role_id = roles.role_id WHERE department = ?", departmentInput.department, function(err, res) {
+                        if(err) throw err;
+                        console.table(res);
+                        askUser();
+                    });
+                });
+            });
+        }
+        if(input.option === "View employees by Role") {
+            connection.query("SELECT * FROM roles", function(err, rolesData) {
+                if(err) throw err;
+                
+                let roles = [];
+                for(let i = 0; i < rolesData.length; i++) {
+                    roles.push(rolesData[i].title);
+                };
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        choices: roles,
+                        message: 'Choose a role:',
+                        name: "role"
+                    }
+                ])
+                .then(function(roleInput) {
+                    connection.query("SELECT id, first_name, last_name, title, salary, department, manager_id FROM \
+                    employees LEFT JOIN (roles LEFT JOIN departments ON roles.department_id = departments.dep_id) ON employees.role_id = roles.role_id WHERE title = ?", roleInput.role, function(err, res) {
                         if(err) throw err;
                         console.table(res);
                         askUser();
@@ -120,7 +147,7 @@ function askUser() {
         }
         if(input.option === "Remove Employee" || input.option === "Update Employee") {
             //Get names and ids from database and pass into inquirer prompt
-            connection.query("SELECT id, first_name, last_name from employees", function(err, data) {
+            connection.query("SELECT * from employees", function(err, data) {
                 if(err) throw err;
 
                 names = [];
